@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: demo
+
+  rabbitmq:
+    host: 192.168.0.147
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    listener:
+      simple:
+        concurrency: 3
+        max-concurrency: 10
+
+queueconfig:
+  queueName: testQ
