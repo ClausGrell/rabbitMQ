@@ -52,9 +52,11 @@ public class MessageListenerService {
 
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode event = objectMapper.readTree(body);
-//      Map jsonMap = objectMapper.readValue(body, Map.class);
+        var jsonMap = objectMapper.readValue(body, Map.class);
+        var eventName = jsonMap.get("EventName").toString();
+        logger.info("EventName = " + eventName);
 
-        String eventType = event.get("event").asText();
+/*        String eventType = event.get("event").asText();
         String bucketName = event.get("bucket").get("name").asText();
         String objectKey = event.get("object").get("key").asText();
 
@@ -62,7 +64,7 @@ public class MessageListenerService {
         logger.info("Bucket: " + bucketName);
         logger.info("Object: " + objectKey);
         logger.info("QQQ: " + headers.get("QQQ"));
-
+*/
         long deliveryTag = message.getMessageProperties().getDeliveryTag();
 
         //channel.basicNack(deliveryTag, MULTIBLEMESSAGES, NOREQUEUE);
