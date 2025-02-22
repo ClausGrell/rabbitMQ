@@ -1,4 +1,4 @@
-package com.example.rabbitmqdemo;
+package com.example.rabbitmq;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "queueconfig")
 public class AppConfig {
+
     private String queueName;
 
     public String getQueueName() {

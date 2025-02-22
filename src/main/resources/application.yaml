@@ -12,6 +12,7 @@ spring:
       simple:
         concurrency: 3
         max-concurrency: 10
+        acknowledge-mode: manual
 
 queueconfig:
   queueName: testQ
