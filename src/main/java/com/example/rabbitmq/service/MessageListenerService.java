@@ -2,7 +2,10 @@
 package com.example.rabbitmq.service;
 
 import com.example.rabbitmq.AppConfig;
+import com.example.rabbitmq.S3.S3Tagging;
 import com.example.rabbitmq.config.RabbitConfig;
+import com.example.rabbitmq.models.S3Event;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.Message;
@@ -50,6 +53,11 @@ public class MessageListenerService {
         MessageProperties messageProperties = message.getMessageProperties();
         Map<String, Object> headers = messageProperties.getHeaders();
 
+//        ObjectMapper objectMapper2 = new ObjectMapper();
+//        S3Event s3Event = objectMapper2.readValue(body, S3Event.class);
+//        System.out.println(s3Event.getEventName());
+
+
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode event = objectMapper.readTree(body);
         var jsonMap = objectMapper.readValue(body, Map.class);
@@ -72,7 +80,8 @@ public class MessageListenerService {
 
         channel.basicAck(deliveryTag, false); // Acknowledges all messages up to the specified delivery tag if true
         logger.info("Message acknowledged");
-
+        S3Tagging s3Tagging = new S3Tagging();
+        s3Tagging.doSomeTagging();
 
     }
 
