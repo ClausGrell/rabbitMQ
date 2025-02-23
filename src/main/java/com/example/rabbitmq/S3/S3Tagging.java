@@ -1,9 +1,8 @@
 package com.example.rabbitmq.S3;
 
-import jakarta.servlet.ServletOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.metrics.StartupStep;
+
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -13,9 +12,6 @@ import software.amazon.awssdk.services.s3.model.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.lang.reflect.Array.set;
-
 
 public class S3Tagging {
 
@@ -49,7 +45,7 @@ public class S3Tagging {
             }
         }
         if (!tagReplaced) {
-            tags.add(Tag.builder().key(tag).value(value).build());
+            tagList.add(Tag.builder().key(tag).value(value).build());
         }
         Tagging tagging = Tagging.builder().tagSet(tagList).build();
 

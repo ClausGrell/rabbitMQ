@@ -1,9 +1,7 @@
 
 package com.example.rabbitmq.service;
 
-import com.example.rabbitmq.config.AppConfig;
 import com.example.rabbitmq.S3.S3Tagging;
-
 import com.example.rabbitmq.config.S3Config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.Message;
@@ -29,14 +27,10 @@ public class RabbitListenerService {
     @Autowired
     S3Config s3Config;
 
-    @Autowired
-    AppConfig appConfig;
-
     private static final boolean REQUEUE = true;
     private static final boolean NOREQUEUE = false;
     private static final boolean SINGLEMESSAGE = false;
     private static final boolean MULTIBLEMESSAGES = true;
-
 
     @RabbitListener(queues = QUEUE_NAME)
     public void receiveMessage(Message message, Channel channel) {
@@ -56,7 +50,7 @@ public class RabbitListenerService {
         ObjectMapper objectMapper = new ObjectMapper();
         var jsonMap = objectMapper.readValue(body, Map.class);
         var eventRecords = (ArrayList) jsonMap.get("Records");
-        var eventRecord = (Map) eventRecords.get(0);
+        var eventRecord = (Map) eventRecords.get(0); // Kan der være flere?
 
         var eventName = eventRecord.get("eventName").toString();
         var bucketName = ((Map) ((Map) eventRecord.get("s3")).get("bucket")).get("name").toString();
@@ -69,6 +63,7 @@ public class RabbitListenerService {
         //logger.info("QQQ: " + headers.get("QQQ"));
 
         String[] parts = eventName.split(":");
+        String system = parts[0]; // S3/Ceph/minio ??
         String eventType = parts[1];
         String eventSubtype = parts[2];
 
@@ -78,9 +73,7 @@ public class RabbitListenerService {
 
         if (eventType.equals("ObjectCreated") && eventSubtype.equals("Put")) {
             // Check Compliance
-//            S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
             s3Tagging.doSomeTagging(bucketName, objectKey, "Complient", "true");
-  //          var tags = s3Tagging.getObjectTags(bucketName, objectKey);      // Replace with your object key (the file name in the S3 bucket)
             logger.info("Message tagged");
             channel.basicAck(deliveryTag, false); // Acknowledges all messages up to the specified delivery tag if true
             //channel.basicNack(deliveryTag, MULTIBLEMESSAGES, NOREQUEUE);
@@ -102,49 +95,3 @@ public class RabbitListenerService {
         }
     }
 }
-
-
-/*
-{
-  "event": "s3:ObjectCreated:Put",
-  "bucket": {
-    "name": "example-bucket"
-  },
-  "object": {
-    "key": "path/to/object/file.txt",
-    "size": 2048,
-    "etag": "d41d8cd98f00b204e9800998ecf8427e",
-    "content-type": "text/plain"
-  },
-  "timestamp": "2025-02-22T12:00:00Z",
-  "user_metadata": {
-    "author": "Jane Doe",
-    "tags": ["document", "file"]
-  },
-  "aws_region": "us-west-2",
-  "event_source": "aws:s3",
-  "event_source_arn": "arn:aws:s3:::example-bucket",
-  "request_id": "abcd1234efgh5678",
-  "source_ip_address": "192.168.1.100"
-}
-*/
-
-/*
-{
-  "event": "object_uploaded",
-  "bucket": "example-bucket",
-  "object_key": "path/to/object/file.txt",
-  "object_size": 2048,
-  "content_type": "text/plain",
-  "timestamp": "2025-02-22T12:00:00Z",
-  "etag": "d41d8cd98f00b204e9800998ecf8427e",
-  "storage_class": "STANDARD",
-  "user_metadata": {
-    "author": "John Doe",
-    "tags": ["documentation", "file"]
-  },
-  "originating_system": "ceph"
-}
- */
-
-
