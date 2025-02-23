@@ -1,6 +1,6 @@
 package com.example.rabbitmq.S3;
 
-import com.example.rabbitmq.service.MessageListenerService;
+import com.example.rabbitmq.service.RabbitListenerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -15,7 +15,7 @@ import java.util.List;
 
 public class S3Tagging {
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageListenerService.class);
+    private static final Logger logger = LoggerFactory.getLogger(RabbitListenerService.class);
 
     private String accessKeyId;
     private String secretaccesskey;

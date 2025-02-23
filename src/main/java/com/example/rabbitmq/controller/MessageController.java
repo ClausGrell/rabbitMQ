@@ -1,5 +1,6 @@
 package com.example.rabbitmq.controller;
 
+import com.example.rabbitmq.config.AppConfig;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,9 @@ public class MessageController {
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    AppConfig appConfig;
 
     String testMessage = "{\n" +
             "  \"event\": \"s3:ObjectCreated:Put\",\n" +
@@ -39,7 +43,7 @@ public class MessageController {
     @GetMapping("/send")
     public String sendMessage() {
         String message = testMessage;
-        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE_NAME, RabbitConfig.ROUTING_KEY, message);
+        rabbitTemplate.convertAndSend(appConfig.getExchangeName(), appConfig.getRoutingKey(), message);
         return "Message sent: " + message;
     }
 }

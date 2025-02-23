@@ -1,6 +1,6 @@
 package com.example.rabbitmq;
 
-import com.example.rabbitmq.service.MessageListenerService;
+import com.example.rabbitmq.service.RabbitListenerService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -15,7 +15,7 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
-class MessageListenerTest {
+class RabbitListenerTest {
 
 	String testMessage = "{\n" +
 			"  \"event\": \"s3:ObjectCreated:Put\",\n" +
@@ -40,7 +40,7 @@ class MessageListenerTest {
 			"  \"source_ip_address\": \"192.168.1.100\"\n" +
 			"}\n";
 	@Autowired
-	private MessageListenerService messageListenerService;  // The listener we want to test
+	private RabbitListenerService messageListenerService;  // The listener we want to test
 
 	@Mock
 	private RabbitTemplate rabbitTemplate; // Mock RabbitTemplate (if needed for some reason)

@@ -16,6 +16,8 @@ spring:
 
 queueconfig:
   queueName: testQ
+  exchangeName: myExchange
+  routingKey : myRoutingKey
 
 s3config:
   s3url : http://192.168.0.147:9000

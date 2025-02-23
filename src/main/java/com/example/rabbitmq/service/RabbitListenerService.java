@@ -3,11 +3,8 @@ package com.example.rabbitmq.service;
 
 import com.example.rabbitmq.config.AppConfig;
 import com.example.rabbitmq.S3.S3Tagging;
-import com.example.rabbitmq.config.RabbitConfig;
 
 import com.example.rabbitmq.config.S3Config;
-import com.example.rabbitmq.models.S3Event;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
@@ -24,12 +21,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Service
-public class MessageListenerService {
+public class RabbitListenerService {
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageListenerService.class);
+    private static final Logger logger = LoggerFactory.getLogger(RabbitListenerService.class);
+    private static final String QUEUE_NAME = "testQ";
 
     @Autowired
     S3Config s3Config;
+
+    @Autowired
+    AppConfig appConfig;
 
     private static final boolean REQUEUE = true;
     private static final boolean NOREQUEUE = false;
@@ -37,7 +38,7 @@ public class MessageListenerService {
     private static final boolean MULTIBLEMESSAGES = true;
 
 
-    @RabbitListener(queues = RabbitConfig.QUEUE_NAME)
+    @RabbitListener(queues = QUEUE_NAME)
     public void receiveMessage(Message message, Channel channel) {
         try {
             processMessage(message, channel);

@@ -1,5 +1,6 @@
 package com.example.rabbitmq.config;
 
+import com.example.rabbitmq.service.RabbitListenerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Binding;
@@ -14,29 +15,26 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(com.example.rabbitmq.service.MessageListenerService.class);
+    private static final Logger logger = LoggerFactory.getLogger(RabbitListenerService.class);
 
     @Autowired
     AppConfig appConfig;
 
-    public static final String QUEUE_NAME = "testQ";
-    public static final String EXCHANGE_NAME = "myExchange";
-    public static final String ROUTING_KEY = "myRoutingKey";
-
     @Bean
     public Queue queue() {
-        var queueName = appConfig.getQueueName();
-        logger.info("queueName=" + queueName);
-        return new Queue(QUEUE_NAME, true); // durable queue
+        logger.info("appConfig.getQueueName()=" + appConfig.getQueueName());
+        return new Queue(appConfig.getQueueName(), true); // durable queue
     }
 
     @Bean
     public TopicExchange exchange() {
-        return new TopicExchange(EXCHANGE_NAME);
+        logger.info("appConfig.getExchangeName()=" + appConfig.getExchangeName());
+        return new TopicExchange(appConfig.getExchangeName());
     }
 
     @Bean
     public Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
+        logger.info("Introduce local variable=" + appConfig.getRoutingKey());
+        return BindingBuilder.bind(queue).to(exchange).with(appConfig.getRoutingKey());
     }
 }
