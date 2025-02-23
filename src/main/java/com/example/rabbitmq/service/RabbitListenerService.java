@@ -48,8 +48,6 @@ public class RabbitListenerService {
     }
 
     private void processMessage(Message message, Channel channel) throws  IOException {
-
-
         MessageProperties messageProperties = message.getMessageProperties();
         Map<String, Object> headers = messageProperties.getHeaders();
         String body = new String(message.getBody());
@@ -74,17 +72,30 @@ public class RabbitListenerService {
         String eventType = parts[1];
         String eventSubtype = parts[2];
 
+        S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
+        var tags = s3Tagging.getObjectTags(bucketName, objectKey);
+        boolean objectComplient = s3Tagging.isComplient(tags);
+
         if (eventType.equals("ObjectCreated") && eventSubtype.equals("Put")) {
             // Check Compliance
-            S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
+//            S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
             s3Tagging.doSomeTagging(bucketName, objectKey, "Complient", "true");
-            s3Tagging.getObjectTags(bucketName, objectKey);      // Replace with your object key (the file name in the S3 bucket)
+  //          var tags = s3Tagging.getObjectTags(bucketName, objectKey);      // Replace with your object key (the file name in the S3 bucket)
             logger.info("Message tagged");
             channel.basicAck(deliveryTag, false); // Acknowledges all messages up to the specified delivery tag if true
             //channel.basicNack(deliveryTag, MULTIBLEMESSAGES, NOREQUEUE);
             //channel.basicReject(deliveryTag, REQUEUE); //Reject en besked og kun en, og "requeue" den.
             logger.info("Message acknowledged");
-
+        } else if (eventType.equals("ObjectCreated") && eventSubtype.equals("PutTagging")) {
+            TimeValidator t = new TimeValidator(tags);
+            var timeValidated = t.validate();
+            if (timeValidated && !objectComplient) {
+                s3Tagging.doSomeTagging(bucketName, objectKey, "Complient", "true");
+            } else if (!timeValidated && objectComplient) {
+                s3Tagging.doSomeTagging(bucketName, objectKey, "Complient", "false");
+            }
+            channel.basicAck(deliveryTag, false);
+            logger.info("Unused message acknowledged");
         } else {
             channel.basicAck(deliveryTag, false);
             logger.info("Unused message acknowledged");

@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(RabbitListenerService.class);
+    private static final Logger logger = LoggerFactory.getLogger(RabbitConfig.class);
 
     @Autowired
     AppConfig appConfig;
