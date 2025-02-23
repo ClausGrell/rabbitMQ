@@ -16,3 +16,9 @@ spring:
 
 queueconfig:
   queueName: testQ
+
+s3config:
+  s3url : http://192.168.0.147:9000
+  region : us-west-2
+  accesskeyid : "vosCOcOnxKUmoDo5old7"
+  secretaccesskey : "PPqSIAYO9885FcwjTGW1mzqCVDBjoXXkjaGSSzE6"

@@ -1,11 +1,12 @@
 
 package com.example.rabbitmq.service;
 
-import com.example.rabbitmq.AppConfig;
+import com.example.rabbitmq.config.AppConfig;
 import com.example.rabbitmq.S3.S3Tagging;
 import com.example.rabbitmq.config.RabbitConfig;
-import com.example.rabbitmq.models.S3Event;
 
+import com.example.rabbitmq.config.S3Config;
+import com.example.rabbitmq.models.S3Event;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.Message;
@@ -16,6 +17,7 @@ import com.rabbitmq.client.Channel;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -27,7 +29,7 @@ public class MessageListenerService {
     private static final Logger logger = LoggerFactory.getLogger(MessageListenerService.class);
 
     @Autowired
-    AppConfig appConfig;
+    S3Config s3Config;
 
     private static final boolean REQUEUE = true;
     private static final boolean NOREQUEUE = false;
@@ -46,46 +48,47 @@ public class MessageListenerService {
 
     private void processMessage(Message message, Channel channel) throws  IOException {
 
+
+        MessageProperties messageProperties = message.getMessageProperties();
+        Map<String, Object> headers = messageProperties.getHeaders();
         String body = new String(message.getBody());
         logger.info("body: " + body);
 
-        // Access the headers
-        MessageProperties messageProperties = message.getMessageProperties();
-        Map<String, Object> headers = messageProperties.getHeaders();
-
-//        ObjectMapper objectMapper2 = new ObjectMapper();
-//        S3Event s3Event = objectMapper2.readValue(body, S3Event.class);
-//        System.out.println(s3Event.getEventName());
-
-
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode event = objectMapper.readTree(body);
         var jsonMap = objectMapper.readValue(body, Map.class);
-        var eventName = jsonMap.get("EventName").toString();
+        var eventRecords = (ArrayList) jsonMap.get("Records");
+        var eventRecord = (Map) eventRecords.get(0);
+
+        var eventName = eventRecord.get("eventName").toString();
+        var bucketName = ((Map) ((Map) eventRecord.get("s3")).get("bucket")).get("name").toString();
+        var objectKey = ((Map) ((Map) eventRecord.get("s3")).get("object")).get("key").toString();
+        var deliveryTag = message.getMessageProperties().getDeliveryTag();
+
         logger.info("EventName = " + eventName);
+        logger.info("bucketName = " + bucketName);
+        logger.info("objectKey = " + objectKey);
+        //logger.info("QQQ: " + headers.get("QQQ"));
 
-/*        String eventType = event.get("event").asText();
-        String bucketName = event.get("bucket").get("name").asText();
-        String objectKey = event.get("object").get("key").asText();
+        String[] parts = eventName.split(":");
+        String eventType = parts[1];
+        String eventSubtype = parts[2];
 
-        logger.info("Received event: " + eventType);
-        logger.info("Bucket: " + bucketName);
-        logger.info("Object: " + objectKey);
-        logger.info("QQQ: " + headers.get("QQQ"));
-*/
-        long deliveryTag = message.getMessageProperties().getDeliveryTag();
+        if (eventType.equals("ObjectCreated") && eventSubtype.equals("Put")) {
+            // Check Compliance
+            S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
+            s3Tagging.doSomeTagging(bucketName, objectKey, "Complient", "true");
+            s3Tagging.getObjectTags(bucketName, objectKey);      // Replace with your object key (the file name in the S3 bucket)
+            logger.info("Message tagged");
+            channel.basicAck(deliveryTag, false); // Acknowledges all messages up to the specified delivery tag if true
+            //channel.basicNack(deliveryTag, MULTIBLEMESSAGES, NOREQUEUE);
+            //channel.basicReject(deliveryTag, REQUEUE); //Reject en besked og kun en, og "requeue" den.
+            logger.info("Message acknowledged");
 
-        //channel.basicNack(deliveryTag, MULTIBLEMESSAGES, NOREQUEUE);
-        //channel.basicReject(deliveryTag, REQUEUE); //Reject en besked og kun en, og "requeue" den.
-
-        channel.basicAck(deliveryTag, false); // Acknowledges all messages up to the specified delivery tag if true
-        logger.info("Message acknowledged");
-        S3Tagging s3Tagging = new S3Tagging();
-        s3Tagging.doSomeTagging();
-
+        } else {
+            channel.basicAck(deliveryTag, false);
+            logger.info("Unused message acknowledged");
+        }
     }
-
-
 }
 
 
