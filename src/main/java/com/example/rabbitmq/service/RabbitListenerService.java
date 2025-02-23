@@ -55,7 +55,6 @@ public class RabbitListenerService {
         var eventName = eventRecord.get("eventName").toString();
         var bucketName = ((Map) ((Map) eventRecord.get("s3")).get("bucket")).get("name").toString();
         var objectKey = ((Map) ((Map) eventRecord.get("s3")).get("object")).get("key").toString();
-        var deliveryTag = message.getMessageProperties().getDeliveryTag();
 
         logger.info("EventName = " + eventName);
         logger.info("bucketName = " + bucketName);
@@ -67,19 +66,24 @@ public class RabbitListenerService {
         String eventType = parts[1];
         String eventSubtype = parts[2];
 
-        S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
-        var tags = s3Tagging.getObjectTags(bucketName, objectKey);
-        boolean objectComplient = s3Tagging.isComplient(tags);
+        var deliveryTag = message.getMessageProperties().getDeliveryTag();
+
 
         if (eventType.equals("ObjectCreated") && eventSubtype.equals("Put")) {
             // Check Compliance
-            s3Tagging.doSomeTagging(bucketName, objectKey, "Complient", "true");
+            S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
+            var tags = s3Tagging.getObjectTags(bucketName, objectKey);
+            boolean objectComplient = s3Tagging.isComplient(tags);
+            s3Tagging.doSomeTagging(bucketName, objectKey, "Complient", "false");
             logger.info("Message tagged");
             channel.basicAck(deliveryTag, false); // Acknowledges all messages up to the specified delivery tag if true
             //channel.basicNack(deliveryTag, MULTIBLEMESSAGES, NOREQUEUE);
             //channel.basicReject(deliveryTag, REQUEUE); //Reject en besked og kun en, og "requeue" den.
             logger.info("Message acknowledged");
         } else if (eventType.equals("ObjectCreated") && eventSubtype.equals("PutTagging")) {
+            S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
+            var tags = s3Tagging.getObjectTags(bucketName, objectKey);
+            boolean objectComplient = s3Tagging.isComplient(tags);
             TimeValidator t = new TimeValidator(tags);
             var timeValidated = t.validate();
             if (timeValidated && !objectComplient) {

@@ -82,6 +82,7 @@ public class S3Tagging {
         List<Tag> tags = response.tagSet();
         if (tags.isEmpty()) {
             logger.info("No tags found for the object.");
+            return null;
         } else {
             for (Tag tag : tags) {
                 logger.info("Tag key: " + tag.key() + ", value: " + tag.value());
@@ -93,6 +94,7 @@ public class S3Tagging {
     public boolean isComplient(List<Tag> tags) {
         if (tags.isEmpty()) {
             logger.info("No tags found for the object.");
+            return false;
         } else {
             for (Tag tag : tags) {
                 if ((tag.key().equals("Complient")) && (tag.value().equals("true")))  {
