@@ -3,8 +3,8 @@ spring:
     name: demo
 
   rabbitmq:
-    host: 192.168.0.147
-    port: 5672
+    host: liam.dk
+    port: 5772
     username: guest
     password: S0l0ve!
     virtual-host: /

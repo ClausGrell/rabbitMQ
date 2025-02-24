@@ -22,7 +22,6 @@ public class TimeValidator implements CValidater {
             return false;
         } else {
             for (Tag tag : tags) {
-                logger.info("Tag key: " + tag.key() + ", value: " + tag.value());
                 if (tag.key().equals("time") && (tag.value()!=null)) {
                     // check for valid time and for future
                     return true;
