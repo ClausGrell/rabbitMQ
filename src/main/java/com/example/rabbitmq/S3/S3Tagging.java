@@ -60,6 +60,36 @@ public class S3Tagging {
         s3Client.close();
     }
 
+    public void removeTag(String bucketName, String objectKey, String tag) {
+        S3Client s3Client = getS3Client();
+        var tags = getObjectTags(bucketName, objectKey );
+        ArrayList<Tag> tagList = new ArrayList(tags);
+
+        boolean tagRemoved = false;
+        for (int i = 0; i < tagList.size(); i++) {
+            if (tagList.get(i).key().equals(tag)) {
+                tagList.remove(i);
+                tagRemoved = true;
+
+            }
+            if (tagRemoved) {
+                Tagging tagging = Tagging.builder().tagSet(tagList).build();
+
+                PutObjectTaggingRequest putObjectTaggingRequest = PutObjectTaggingRequest.builder()
+                        .bucket(bucketName)  // Replace with your bucket name
+                        .key(objectKey)      // Replace with your object key (the file name in the S3 bucket)
+                        .tagging(tagging)
+                        .build();
+
+                PutObjectTaggingResponse response = s3Client.putObjectTagging(putObjectTaggingRequest);
+                logger.info("Tags have been successfully added: " + response);
+            }
+        }
+        s3Client.close();
+    }
+
+
+
     private S3Client getS3Client() {
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKeyId, secretaccesskey);
         S3Client s3Client = S3Client.builder()

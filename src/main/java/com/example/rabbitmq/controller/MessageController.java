@@ -1,9 +1,12 @@
 package com.example.rabbitmq.controller;
 
+import com.example.rabbitmq.S3.S3Tagging;
 import com.example.rabbitmq.config.AppConfig;
+import com.example.rabbitmq.config.S3Config;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.rabbitmq.config.RabbitConfig;
@@ -16,6 +19,10 @@ public class MessageController {
 
     @Autowired
     AppConfig appConfig;
+
+    @Autowired
+    S3Config s3Config;
+
 
     String testMessage = "{\n" +
             "  \"event\": \"s3:ObjectCreated:Put\",\n" +
@@ -46,4 +53,32 @@ public class MessageController {
         rabbitTemplate.convertAndSend(appConfig.getExchangeName(), appConfig.getRoutingKey(), message);
         return "Message sent: " + message;
     }
+
+    @GetMapping("/tags")
+    public String getTags(@RequestParam String bucket, @RequestParam String object ) {
+        S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
+        var l = s3Tagging.getObjectTags(bucket, object);
+        String returnString = "<h3>Tags on " + bucket + "/" + object + "</h3>";
+        for (int i = 0; i < l.size(); i++) {
+            returnString = returnString + "<br><b>" + l.get(i).key() + "</b>:" + l.get(i).value();
+        }
+        return returnString;
+    }
+
+
+    @GetMapping("/tagremove")
+    public String removeTag(@RequestParam String bucket, @RequestParam String object, @RequestParam String tag ) {
+        S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
+        s3Tagging.removeTag(bucket, object, tag);
+        return "OK";
+    }
+
+
+    @GetMapping("/tagadd")
+    public String addTag(@RequestParam String bucket, @RequestParam String object, @RequestParam String tag, @RequestParam String value ) {
+        S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
+        s3Tagging.doSomeTagging(bucket, object, tag, value);
+        return "OK";
+    }
+
 }
