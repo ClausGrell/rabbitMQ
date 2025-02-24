@@ -20,7 +20,7 @@ queueconfig:
   routingKey : myRoutingKey
 
 s3config:
-  s3url : http://192.168.0.147:9000
+  s3url : http://liam.dk:9100
   region : us-west-2
   accesskeyid : "BONUWre9QgtymZ1Z1EAb"
   secretaccesskey : "B66PAsq2wO3tvTjo1EMZrvESackgg6sUZucNdstb"
