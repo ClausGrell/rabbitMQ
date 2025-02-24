@@ -32,16 +32,21 @@ public class S3Tagging {
     public void doSomeTagging(String bucketName, String objectKey, String tag, String value) {
         S3Client s3Client = getS3Client();
         var tags = getObjectTags(bucketName, objectKey );
-        ArrayList<Tag> tagList = new ArrayList(tags);
+        ArrayList<Tag> tagList = new ArrayList<Tag>();
+        if (tags!=null) {
+            tagList = new ArrayList(tags);
+        }
 
         boolean tagReplaced = false;
-        for (int i = 0; i < tagList.size(); i++) {
-            var key = tagList.get(i).key();
+        if (tagList!=null) {
+            for (int i = 0; i < tagList.size(); i++) {
+                var key = tagList.get(i).key();
 
-            if (key.equals(tag)) {
-                var v = Tag.builder().key(tag).value(value).build();
-                tagList.set(i,v);
-                tagReplaced = true;
+                if (key.equals(tag)) {
+                    var v = Tag.builder().key(tag).value(value).build();
+                    tagList.set(i, v);
+                    tagReplaced = true;
+                }
             }
         }
         if (!tagReplaced) {
@@ -63,7 +68,12 @@ public class S3Tagging {
     public void removeTag(String bucketName, String objectKey, String tag) {
         S3Client s3Client = getS3Client();
         var tags = getObjectTags(bucketName, objectKey );
-        ArrayList<Tag> tagList = new ArrayList(tags);
+        ArrayList<Tag> tagList = null;
+
+        if (tags.isEmpty())
+            tagList = new ArrayList<Tag>();
+        else
+            tagList = new ArrayList(tags);
 
         boolean tagRemoved = false;
         for (int i = 0; i < tagList.size(); i++) {
@@ -90,7 +100,7 @@ public class S3Tagging {
 
 
 
-    private S3Client getS3Client() {
+    public S3Client getS3Client() {
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKeyId, secretaccesskey);
         S3Client s3Client = S3Client.builder()
                 .endpointOverride(URI.create(s3url))
@@ -122,14 +132,16 @@ public class S3Tagging {
     }
 
     public boolean isComplient(List<Tag> tags) {
-        if (tags.isEmpty()) {
-            logger.info("No tags found for the object.");
-            return false;
-        } else {
-            for (Tag tag : tags) {
-                if ((tag.key().equals("Complient")) && (tag.value().equals("true")))  {
-                    System.out.println();
-                    return true;
+        if (tags != null) {
+            if (tags.isEmpty()) {
+                logger.info("No tags found for the object.");
+                return false;
+            } else {
+                for (Tag tag : tags) {
+                    if ((tag.key().equals("Complient")) && (tag.value().equals("true"))) {
+                        System.out.println();
+                        return true;
+                    }
                 }
             }
         }

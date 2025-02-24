@@ -68,32 +68,36 @@ public class RabbitListenerService {
 
         var deliveryTag = message.getMessageProperties().getDeliveryTag();
 
-
-        if (eventType.equals("ObjectCreated") && eventSubtype.equals("Put")) {
-            // Check Compliance
-            S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
-            var tags = s3Tagging.getObjectTags(bucketName, objectKey);
-            boolean objectComplient = s3Tagging.isComplient(tags);
-            s3Tagging.doSomeTagging(bucketName, objectKey, "Complient", "false");
-            logger.info("Message tagged");
-            channel.basicAck(deliveryTag, false); // Acknowledges all messages up to the specified delivery tag if true
-            //channel.basicNack(deliveryTag, MULTIBLEMESSAGES, NOREQUEUE);
-            //channel.basicReject(deliveryTag, REQUEUE); //Reject en besked og kun en, og "requeue" den.
-            logger.info("Message acknowledged");
-        } else if (eventType.equals("ObjectCreated") && eventSubtype.equals("PutTagging")) {
-            S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
-            var tags = s3Tagging.getObjectTags(bucketName, objectKey);
-            boolean objectComplient = s3Tagging.isComplient(tags);
-            TimeValidator t = new TimeValidator(tags);
-            var timeValidated = t.validate();
-            if (timeValidated && !objectComplient) {
-                s3Tagging.doSomeTagging(bucketName, objectKey, "Complient", "true");
-            } else if (!timeValidated && objectComplient) {
+        try {
+            if (eventType.equals("ObjectCreated") && eventSubtype.equals("Put")) {
+                // Check Compliance
+                S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
+                var tags = s3Tagging.getObjectTags(bucketName, objectKey);
+                boolean objectComplient = s3Tagging.isComplient(tags);
                 s3Tagging.doSomeTagging(bucketName, objectKey, "Complient", "false");
+                logger.info("Message tagged");
+                channel.basicAck(deliveryTag, false); // Acknowledges all messages up to the specified delivery tag if true
+                //channel.basicNack(deliveryTag, MULTIBLEMESSAGES, NOREQUEUE);
+                //channel.basicReject(deliveryTag, REQUEUE); //Reject en besked og kun en, og "requeue" den.
+                logger.info("Message acknowledged");
+            } else if (eventType.equals("ObjectCreated") && eventSubtype.equals("PutTagging")) {
+                S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
+                var tags = s3Tagging.getObjectTags(bucketName, objectKey);
+                boolean objectComplient = s3Tagging.isComplient(tags);
+                TimeValidator t = new TimeValidator(tags);
+                var timeValidated = t.validate();
+                if (timeValidated && !objectComplient) {
+                    s3Tagging.doSomeTagging(bucketName, objectKey, "Complient", "true");
+                } else if (!timeValidated && objectComplient) {
+                    s3Tagging.doSomeTagging(bucketName, objectKey, "Complient", "false");
+                }
+                channel.basicAck(deliveryTag, false);
+                logger.info("Unused message acknowledged");
+            } else {
+                channel.basicAck(deliveryTag, false);
+                logger.info("Unused message acknowledged");
             }
-            channel.basicAck(deliveryTag, false);
-            logger.info("Unused message acknowledged");
-        } else {
+        } catch (Exception e) {
             channel.basicAck(deliveryTag, false);
             logger.info("Unused message acknowledged");
         }

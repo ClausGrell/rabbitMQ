@@ -10,6 +10,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.rabbitmq.config.RabbitConfig;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class MessageController {
@@ -80,5 +90,81 @@ public class MessageController {
         s3Tagging.doSomeTagging(bucket, object, tag, value);
         return "OK";
     }
+
+
+    @GetMapping("/newmetadata")
+    public String hewmetadata() {
+        S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
+        S3Client s3Client = s3Tagging.getS3Client();
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("Author", "Jane Doe");
+        metadata.put("Description", "Updated metadata for the file");
+        metadata.put("Content-Type", "text/plain");
+
+        // Step 1: Copy the object with new metadata
+        CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
+                .sourceBucket("kaj")   // Original bucket
+                .sourceKey("testfile")         // Original object key
+                .destinationBucket("kaj")  // Destination bucket (same in this case)
+                .destinationKey("testfile")        // Destination key (same in this case)
+                .metadata(metadata)          // Set the new metadata
+                .metadataDirective("REPLACE") // This is important to indicate metadata should be replaced
+                .build();
+
+        CopyObjectResponse copyResponse = s3Client.copyObject(copyObjectRequest);
+        System.out.println("Object copied with new metadata: " + copyResponse.copyObjectResult());
+       return "OK";
+    }
+
+
+    @GetMapping("/createbucket")
+    public String createbucket(@RequestParam String bucket) {
+        S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
+        S3Client s3Client = s3Tagging.getS3Client();
+        try {
+
+            String bucketName = bucket;
+            CreateBucketRequest createBucketRequest = CreateBucketRequest.builder()
+                    .bucket(bucketName)
+                    .createBucketConfiguration(config -> config
+                            .locationConstraint(BucketLocationConstraint.US_EAST_2))
+                    .build();
+
+            CreateBucketResponse response = s3Client.createBucket(createBucketRequest);
+            System.out.println("Bucket created successfully: " + response.location());
+
+
+            String filePath = "mvnw";  // Local file path
+            String keyName = "testfile"; // Desired key name in S3
+
+
+
+            Map<String, String> metadata = new HashMap<>();
+            metadata.put("Author", "Claus");
+            metadata.put("Description", "Sample file for S3 upload");
+            metadata.put("Content-Type", "text/plain");
+
+            // Define the PutObjectRequest
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)  // Specify the S3 bucket name
+                    .key(keyName)        // Specify the object key (name in S3)
+                    .metadata(metadata)
+                    .build();
+
+            Path path = Paths.get(filePath);
+
+
+
+            PutObjectResponse putObjectResponse = s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
+            System.out.println("File uploaded successfully: " + putObjectResponse);
+
+        } catch (Exception e) {
+            System.out.println("Error creating bucket: " + e.getMessage());
+        }
+
+        return "OK";
+    }
+
+
 
 }
