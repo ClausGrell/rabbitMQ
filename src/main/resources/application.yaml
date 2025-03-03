@@ -6,7 +6,7 @@ spring:
     host: liam.dk
     port: 5772
     username: guest
-    password: S0l0ve!
+    password: S0l0ve#
     virtual-host: /
     listener:
       simple:

@@ -18,6 +18,14 @@
 		<java.version>11</java.version>
 	</properties>
 	<dependencies>
+
+			<!-- Optional: Spring Boot Starter Security for additional security features -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-security</artifactId>
+			</dependency>
+
+
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>s3</artifactId>
