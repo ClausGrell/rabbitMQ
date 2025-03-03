@@ -13,6 +13,13 @@ spring:
         concurrency: 3
         max-concurrency: 10
         acknowledge-mode: manual
+    ssl:
+      enabled: true
+      key-store :
+      key-store-password :
+      trust-store :
+      trust-store-password :
+
 
 queueconfig:
   queueName: testQ

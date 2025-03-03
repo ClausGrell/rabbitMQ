@@ -37,7 +37,6 @@ public class RabbitConfig {
         connectionFactory.setUsername("guest"); // RabbitMQ username
         connectionFactory.setPassword("guest"); // RabbitMQ password
         connectionFactory.setVirtualHost("/");
-
         /*
         try {
             connectionFactory.getRabbitConnectionFactory().useSslProtocol("TLSv1.2");  // Enable TLS v1.2
