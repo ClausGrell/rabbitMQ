@@ -3,23 +3,16 @@ spring:
     name: demo
 
   rabbitmq:
-    host: liam.dk
-    port: 5772
+    host: 192.168.0.147
+    port: 5672
     username: guest
-    password: S0l0ve#
+    password: guest
     virtual-host: /
     listener:
       simple:
         concurrency: 3
         max-concurrency: 10
         acknowledge-mode: manual
-    ssl:
-      enabled: true
-      key-store :
-      key-store-password :
-      trust-store :
-      trust-store-password :
-
 
 queueconfig:
   queueName: testQ
