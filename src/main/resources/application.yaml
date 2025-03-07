@@ -3,7 +3,7 @@ spring:
     name: demo
 
   rabbitmq:
-    host: 192.168.0.147
+    host: 192.168.0.184
     port: 5671
     username: guest
     password: guest
@@ -15,11 +15,12 @@ spring:
         acknowledge-mode: manual
     ssl:
       enables: true
-
+      key-store: ssl/rabbitmq.jks
+      key-store-password: S0r0ver!
       trust-store-type: PKCS12
-      trust-store: rabbitmq.truststore
-      trust-store-password: S0r0ver!
-      protocol: TLSv1.2
+      trust-store: ssl/cacerts
+      trust-store-password: changeit
+      protocol: TLSv1.3
 
 
 

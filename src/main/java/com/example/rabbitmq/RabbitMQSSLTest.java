@@ -5,6 +5,7 @@ import com.rabbitmq.client.*;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -18,7 +19,7 @@ import java.util.concurrent.TimeoutException;
 public class RabbitMQSSLTest {
 
     private static final String QUEUE_NAME = "test_queue";
-    private static final String RABBITMQ_HOST = "192.168.0.147";
+    private static final String RABBITMQ_HOST = "192.168.0.184";
     private static final int SSL_PORT = 5672; // SSL port
 
     public static void main(String[] args) throws Exception {
@@ -63,15 +64,13 @@ public class RabbitMQSSLTest {
      */
     private static SSLContext setupSSLContext() throws Exception {
         // Path to your certificate files
-        String caCertPath = "ca.crt"; // CA certificate
-        String clientCertPath = "rabbitmq.crt"; // Client certificate (if used)
-        String clientKeyPath = "rabbitmq.key"; // Client private key (if used)
-        String clientKeyStorePath = "rabbitmq.p12"; // PKCS12 client certificate and key file
+        String caCertPath = "ssl/cacerts"; // CA certificate
+        String clientKeyStorePath = "ssl/rabbitmq.jks"; // PKCS12 client certificate and key file
 
         // Load the PKCS12 keystore (which contains the client certificate and private key)
-        KeyStore clientKeyStore = KeyStore.getInstance("PKCS12");
+        KeyStore clientKeyStore = KeyStore.getInstance("JKS");
         FileInputStream clientCertFile = new FileInputStream(clientKeyStorePath);
-        clientKeyStore.load(clientCertFile, "S0rteper!".toCharArray()); // Use the password for the PKCS12 file
+        clientKeyStore.load(clientCertFile, "S0r0ver!".toCharArray()); // Use the password for the PKCS12 file
 
         // Create a TrustStore to trust the CA certificate
         KeyStore trustKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -80,8 +79,15 @@ public class RabbitMQSSLTest {
         // Load CA certificate into the TrustStore
         CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
         FileInputStream caCertFile = new FileInputStream(caCertPath);
-        X509Certificate caCert = (X509Certificate) certFactory.generateCertificate(caCertFile);
-        trustKeyStore.setCertificateEntry("ca-cert", caCert);
+
+        FileInputStream caCertFile2 = new FileInputStream("ssl/fullchain.pem");
+        CertificateFactory certFactory2 = CertificateFactory.getInstance("X.509");
+        X509Certificate caCert2 = (X509Certificate) certFactory2.generateCertificate(caCertFile2);
+
+        String alias = caCert2.getSubjectDN().getName();
+
+      //  X509Certificate caCert = (X509Certificate) certFactory.generateCertificate(caCertFile);
+        trustKeyStore.setCertificateEntry(alias, caCert2);
 
         // Initialize a TrustManagerFactory with the TrustStore
         TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -89,10 +95,10 @@ public class RabbitMQSSLTest {
 
         // Initialize a KeyManagerFactory with the client certificate (from the PKCS12 keystore)
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        keyManagerFactory.init(clientKeyStore, "S0rteper!".toCharArray()); // Use the password for the keystore
+        keyManagerFactory.init(clientKeyStore, "S0r0ver!".toCharArray()); // Use the password for the keystore
 
         // Create and initialize the SSLContext
-        SSLContext sslContext = SSLContext.getInstance("TLS");
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.3");
         sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), new SecureRandom());
 
         return sslContext;    }
