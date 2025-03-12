@@ -3,8 +3,8 @@ spring:
     name: demo
 
   rabbitmq:
-    host: 192.168.0.147
-    port: 5671
+    host: 192.168.0.184
+    port: 5672
     username: guest
     password: guest
     virtual-host: /
@@ -14,11 +14,10 @@ spring:
         max-concurrency: 10
         acknowledge-mode: manual
     ssl:
-      enables: true
-
+      enables: false
       trust-store-type: PKCS12
       trust-store: rabbitmq.truststore
-      trust-store-password: S0r0ver!
+      trust-store-password: !
       protocol: TLSv1.2
 
 
