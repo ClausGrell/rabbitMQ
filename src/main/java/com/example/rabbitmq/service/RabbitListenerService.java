@@ -3,6 +3,7 @@ package com.example.rabbitmq.service;
 
 import com.example.rabbitmq.S3.S3Tagging;
 import com.example.rabbitmq.config.S3Config;
+import com.example.rabbitmq.models.S3EventNotification;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
@@ -56,6 +57,14 @@ public class RabbitListenerService {
         var bucketName = ((Map) ((Map) eventRecord.get("s3")).get("bucket")).get("name").toString();
         var objectKey = ((Map) ((Map) eventRecord.get("s3")).get("object")).get("key").toString();
 
+        var s3JsonMap = ((Map) eventRecord.get("s3"));
+
+        ObjectMapper s3EventMapper = new ObjectMapper();
+        var json = objectMapper.writeValueAsString(jsonMap);
+
+        S3EventNotification s3EventNotification = objectMapper.readValue(json, S3EventNotification.class);
+
+        var s3Event = s3EventNotification.getRecords().get(0).getEventName().toString();
         logger.info("EventName = " + eventName);
         logger.info("bucketName = " + bucketName);
         logger.info("objectKey = " + objectKey);

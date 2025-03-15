@@ -147,4 +147,21 @@ public class S3Tagging {
         }
         return false;
     }
+
+    private static void createBucket(S3Client s3Client, String bucketName) {
+        try {
+            // Create a bucket request
+            CreateBucketRequest createBucketRequest = CreateBucketRequest.builder()
+                    .bucket(bucketName)
+                    .build();
+
+            // Call the create bucket method
+            s3Client.createBucket(createBucketRequest);
+
+            System.out.println("Bucket created successfully: " + bucketName);
+
+        } catch (S3Exception e) {
+            System.err.println("Error creating bucket: " + e.awsErrorDetails().errorMessage());
+        }
+    }
 }
