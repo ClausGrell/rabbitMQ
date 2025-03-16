@@ -67,6 +67,28 @@ public class S3Tagging {
         s3Client.close();
     }
 
+    public void getMetaData() {
+        S3Client s3Client = getS3Client();
+        try {
+            // Get object metadata
+            HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+                    .bucket("testbucket")
+                    .key("Main.java")
+                    .build();
+
+            HeadObjectResponse metadata = s3Client.headObject(headObjectRequest);
+
+            // Print metadata details
+            System.out.println("Metadata for object: " + "Main.java");
+            System.out.println("Content-Type: " + metadata.contentType());
+            System.out.println("Last Modified: " + metadata.lastModified());
+            System.out.println("Metadata (Custom Metadata): " + metadata.metadata());
+
+        } catch (S3Exception e) {
+            System.err.println("Error getting metadata: " + e.getMessage());
+            System.exit(1);
+        }
+    }
 
     public void addMetaData() {
         // Prepare new metadata
@@ -78,10 +100,10 @@ public class S3Tagging {
 
         // Step 1: Copy the object with new metadata
         CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
-                .sourceBucket("kaj")   // Original bucket
-                .sourceKey("testfile")         // Original object key
-                .destinationBucket("kaj")  // Destination bucket (same in this case)
-                .destinationKey("testfile")        // Destination key (same in this case)
+                .sourceBucket("testbucket")   // Original bucket
+                .sourceKey("Main.java")         // Original object key
+                .destinationBucket("testbucket")  // Destination bucket (same in this case)
+                .destinationKey("Main.java")        // Destination key (same in this case)
                 .metadata(metadata)          // Set the new metadata
                 .metadataDirective("REPLACE") // This is important to indicate metadata should be replaced
                 .build();

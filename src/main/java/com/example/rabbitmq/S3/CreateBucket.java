@@ -27,7 +27,21 @@ public class CreateBucket {
 
     public static void main( String args[]) {
         CreateBucket createBucket = new CreateBucket();
-        createBucket.createBucket();
+//        createBucket.createBucket();
+//        createBucket.addMetaData();
+        createBucket.getMetaData();
+
+    }
+
+    private void addMetaData() {
+        S3Tagging s3Tagging = new S3Tagging(s3url,region, accesskeyid, secretaccesskey);
+        s3Tagging.addMetaData();
+    }
+
+
+    private void getMetaData() {
+        S3Tagging s3Tagging = new S3Tagging(s3url,region, accesskeyid, secretaccesskey);
+        s3Tagging.getMetaData();
     }
 
     private void createBucket() {
