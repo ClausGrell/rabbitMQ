@@ -1,6 +1,12 @@
 package com.example.rabbitmq.S3;
 
 import com.rabbitmq.client.*;
+import software.amazon.awssdk.services.s3.model.Bucket;
+import software.amazon.awssdk.services.s3.model.ListBucketsRequest;
+import software.amazon.awssdk.services.s3.model.ListBucketsResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -12,12 +18,11 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.sns.model.CreateTopicRequest;
 import software.amazon.awssdk.services.sns.model.CreateTopicResponse;
 
-import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.TimeoutException;
 
-public class CreateBucket {
+public class  CreateBucket {
 
 
     String s3url = "http://192.168.0.184:9000";
@@ -29,8 +34,9 @@ public class CreateBucket {
         CreateBucket createBucket = new CreateBucket();
 //        createBucket.createBucket();
 //        createBucket.addMetaData();
-        createBucket.getMetaData();
-
+//        createBucket.getMetaData();
+        createBucket.listBuckets();
+        createBucket.listBucketObjects("mbs");
     }
 
     private void addMetaData() {
@@ -43,6 +49,48 @@ public class CreateBucket {
         S3Tagging s3Tagging = new S3Tagging(s3url,region, accesskeyid, secretaccesskey);
         s3Tagging.getMetaData();
     }
+
+
+    public void listBuckets() {
+        S3Client s3Client = getS3Client();
+        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
+        try {
+            ListBucketsResponse listBucketsResponse = s3Client.listBuckets(listBucketsRequest);
+            System.out.println("List of S3 Buckets:");
+            for (Bucket bucket : listBucketsResponse.buckets()) {
+                System.out.println(bucket.name());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // Always close the client
+            s3Client.close();
+        }
+    }
+
+
+    public void listBucketObjects(String bucketName) {
+        S3Client s3Client = getS3Client();
+        try  {
+
+            // List objects in the bucket
+            ListObjectsV2Request listObjects = ListObjectsV2Request.builder()
+                    .bucket(bucketName)
+                    .build();
+
+            // Get the objects
+            ListObjectsV2Response response = s3Client.listObjectsV2(listObjects);
+
+            // Print the object keys
+            for (S3Object s3Object : response.contents()) {
+                System.out.println("Object Key: " + s3Object.key());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }    }
+
+
 
     private void createBucket() {
         S3Client s3Client = getS3Client();
