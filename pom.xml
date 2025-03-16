@@ -30,7 +30,11 @@
 			<artifactId>sns</artifactId>
 			<version>2.30.38</version> <!-- Use the latest version available -->
 		</dependency>
-
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-s3</artifactId>
+			<version>1.12.295</version> <!-- Replace with the latest version -->
+		</dependency>
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>s3</artifactId>

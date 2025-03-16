@@ -13,6 +13,7 @@ import com.rabbitmq.client.Channel;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -56,12 +57,12 @@ public class RabbitListenerService {
         var eventName = eventRecord.get("eventName").toString();
         var bucketName = ((Map) ((Map) eventRecord.get("s3")).get("bucket")).get("name").toString();
         var objectKey = ((Map) ((Map) eventRecord.get("s3")).get("object")).get("key").toString();
-
+        objectKey = URLDecoder.decode(objectKey, "UTF-8");
         var s3JsonMap = ((Map) eventRecord.get("s3"));
 
         ObjectMapper s3EventMapper = new ObjectMapper();
         var json = objectMapper.writeValueAsString(jsonMap);
-
+/*
         S3EventNotification s3EventNotification = objectMapper.readValue(json, S3EventNotification.class);
 
         var s3Event = s3EventNotification.getRecords().get(0).getEventName().toString();
@@ -69,7 +70,7 @@ public class RabbitListenerService {
         logger.info("bucketName = " + bucketName);
         logger.info("objectKey = " + objectKey);
         //logger.info("QQQ: " + headers.get("QQQ"));
-
+*/
         String[] parts = eventName.split(":");
         String system = parts[0]; // S3/Ceph/minio ??
         String eventType = parts[1];

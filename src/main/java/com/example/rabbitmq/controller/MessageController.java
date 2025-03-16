@@ -90,7 +90,7 @@ public class MessageController {
 
 
     @GetMapping("/newmetadata")
-    public String hewmetadata() {
+    public String newmetadata() {
         S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
         S3Client s3Client = s3Tagging.getS3Client();
         Map<String, String> metadata = new HashMap<>();

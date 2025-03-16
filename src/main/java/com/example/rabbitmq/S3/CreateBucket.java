@@ -71,9 +71,6 @@ public class CreateBucket {
 
         System.out.println("SNS Topic ARN: " + snsTopicArn);
 
-
-
-
         try {
             rabbitConnection.close();
             s3Client.close();
@@ -95,13 +92,9 @@ public class CreateBucket {
     }
 
     public  Connection getRabbitConnection() {
-
-        // Create connection factory
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("192.168.0.184");
         factory.setPort(5672);
-
-        // Optional: set up credentials
         factory.setUsername("guest");
         factory.setPassword("guest");
 
@@ -115,25 +108,16 @@ public class CreateBucket {
         }
     }
 
-
-
     private static void createBucket(S3Client s3Client, String bucketName) {
         try {
-            // Create a bucket request
             CreateBucketRequest createBucketRequest = CreateBucketRequest.builder()
                     .bucket(bucketName)
                     .build();
-
-            // Call the create bucket method
             s3Client.createBucket(createBucketRequest);
-
             System.out.println("Bucket created successfully: " + bucketName);
 
         } catch (S3Exception e) {
             System.err.println("Error creating bucket: " + e.awsErrorDetails().errorMessage());
         }
     }
-
-
-
 }

@@ -11,7 +11,9 @@ import software.amazon.awssdk.services.s3.model.*;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class S3Tagging {
 
@@ -65,6 +67,37 @@ public class S3Tagging {
         s3Client.close();
     }
 
+
+    public void addMetaData() {
+        // Prepare new metadata
+        S3Client s3Client = getS3Client();
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("Author", "Jane Doe");
+        metadata.put("Description", "Updated metadata for the file");
+        metadata.put("Content-Type", "text/plain");
+
+        // Step 1: Copy the object with new metadata
+        CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
+                .sourceBucket("kaj")   // Original bucket
+                .sourceKey("testfile")         // Original object key
+                .destinationBucket("kaj")  // Destination bucket (same in this case)
+                .destinationKey("testfile")        // Destination key (same in this case)
+                .metadata(metadata)          // Set the new metadata
+                .metadataDirective("REPLACE") // This is important to indicate metadata should be replaced
+                .build();
+
+        CopyObjectResponse copyResponse = s3Client.copyObject(copyObjectRequest);
+        System.out.println("Object copied with new metadata: " + copyResponse.copyObjectResult());
+
+
+    }
+
+
+
+
+
+
+
     public void removeTag(String bucketName, String objectKey, String tag) {
         S3Client s3Client = getS3Client();
         var tags = getObjectTags(bucketName, objectKey );
@@ -92,7 +125,7 @@ public class S3Tagging {
                         .build();
 
                 PutObjectTaggingResponse response = s3Client.putObjectTagging(putObjectTaggingRequest);
-                logger.info("Tags have been successfully added: " + response);
+                logger.info("Tags have been successfully removed: " + response);
             }
         }
         s3Client.close();
@@ -146,22 +179,5 @@ public class S3Tagging {
             }
         }
         return false;
-    }
-
-    private static void createBucket(S3Client s3Client, String bucketName) {
-        try {
-            // Create a bucket request
-            CreateBucketRequest createBucketRequest = CreateBucketRequest.builder()
-                    .bucket(bucketName)
-                    .build();
-
-            // Call the create bucket method
-            s3Client.createBucket(createBucketRequest);
-
-            System.out.println("Bucket created successfully: " + bucketName);
-
-        } catch (S3Exception e) {
-            System.err.println("Error creating bucket: " + e.awsErrorDetails().errorMessage());
-        }
     }
 }
