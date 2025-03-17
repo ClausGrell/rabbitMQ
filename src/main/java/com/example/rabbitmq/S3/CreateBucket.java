@@ -1,5 +1,7 @@
 package com.example.rabbitmq.S3;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
 import software.amazon.awssdk.services.s3.model.Bucket;
 import software.amazon.awssdk.services.s3.model.ListBucketsRequest;
@@ -34,9 +36,9 @@ public class  CreateBucket {
         CreateBucket createBucket = new CreateBucket();
 //        createBucket.createBucket();
 //        createBucket.addMetaData();
-//        createBucket.getMetaData();
-        createBucket.listBuckets();
-        createBucket.listBucketObjects("mbs");
+        createBucket.getMetaData();
+//        createBucket.listBuckets();
+//        createBucket.listBucketObjects("mbs");
     }
 
     private void addMetaData() {
@@ -60,6 +62,17 @@ public class  CreateBucket {
             for (Bucket bucket : listBucketsResponse.buckets()) {
                 System.out.println(bucket.name());
             }
+
+            String json = "{\"EventName\":\"s3:ObjectCreated:PutTagging\",\"Key\":\"test/58260c0e-c4b4-4686-9cfc-3f732ff7f6e1\",\"Records\":[{\"eventVersion\":\"2.0\",\"eventSource\":\"minio:s3\",\"awsRegion\":\"\",\"eventTime\":\"2025-03-16T16:02:04.633Z\",\"eventName\":\"s3:ObjectCreated:PutTagging\",\"userIdentity\":{\"principalId\":\"minioadmin\"},\"requestParameters\":{\"principalId\":\"minioadmin\",\"region\":\"\",\"sourceIPAddress\":\"10.0.2.100\"},\"responseElements\":{\"content-length\":\"0\",\"x-amz-id-2\":\"dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8\",\"x-amz-request-id\":\"182D53F0D14C3556\",\"x-minio-deployment-id\":\"76fc4486-4468-4863-a1e9-913f479c09d7\",\"x-minio-origin-endpoint\":\"http://10.0.2.100:9000\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"Config\",\"bucket\":{\"name\":\"test\",\"ownerIdentity\":{\"principalId\":\"minioadmin\"},\"arn\":\"arn:aws:s3:::test\"},\"object\":{\"key\":\"58260c0e-c4b4-4686-9cfc-3f732ff7f6e1\",\"size\":10,\"eTag\":\"94b54a8627da3ce4b54dd168bf40d229\",\"contentType\":\"application/octet-stream\",\"userMetadata\":{\"content-disposition\":\"58260c0e-c4b4-4686-9cfc-3f732ff7f6e1\",\"content-type\":\"application/octet-stream\"},\"sequencer\":\"182D53F0D09E8471\"}},\"source\":{\"host\":\"10.0.2.100\",\"port\":\"\",\"userAgent\":\"NiFi, aws-sdk-java/1.12.710 Linux/6.5.0-44-generic OpenJDK_64-Bit_Server_VM/21.0.3+9-Ubuntu-1ubuntu123.10.1 java/21.0.3 kotlin/1.9.23 vendor/Ubuntu cfg/retry-mode/legacy cfg/auth-source#unknown\"}}]}";
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(json);
+
+            // Convert the JSON to an HTML table
+            String html = generateHtml(jsonNode);
+            System.out.println("****************************************'");
+            System.out.println(html);
+            System.out.println("****************************************'");
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -182,4 +195,27 @@ public class  CreateBucket {
             System.err.println("Error creating bucket: " + e.awsErrorDetails().errorMessage());
         }
     }
+
+
+    public String generateHtml(JsonNode rootNode) {
+        StringBuilder html = new StringBuilder();
+
+        // Basic HTML structure
+        html.append("<html><head><title>JSON Data</title></head><body>");
+        html.append("<h1>JSON Data</h1>");
+        html.append("<table border='1'>");
+
+        // Iterate over the JSON fields
+        rootNode.fieldNames().forEachRemaining(fieldName -> {
+            JsonNode fieldValue = rootNode.get(fieldName);
+            html.append("<tr><td>").append(fieldName).append("</td><td>").append(fieldValue.asText()).append("</td></tr>");
+        });
+
+        // Close HTML tags
+        html.append("</table>");
+        html.append("</body></html>");
+
+        return html.toString();
+    }
+
 }

@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9cce6daf-7485-4157-9bec-b643166dce32" name="Changes" comment="-">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/rabbitmq/S3/CreateBucket.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/rabbitmq/S3/CreateBucket.java" afterDir="false" />
     </list>
@@ -39,7 +38,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Application.CreateBucket.executor": "Run",
+    "Application.CreateBucket.executor": "Debug",
     "Application.Main.executor": "Run",
     "Application.rabbitMQListener.executor": "Run",
     "JUnit.MessageListenerTest.executor": "Run",
@@ -54,7 +53,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.DemoApplication.executor": "Run",
-    "Spring Boot.RabbitApplication.executor": "Debug",
+    "Spring Boot.RabbitApplication.executor": "Run",
     "git-widget-placeholder": "master",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/projects/rabbitMQ",
@@ -80,7 +79,7 @@
       </set>
     </option>
   </component>
-  <component name="RunManager" selected="Application.CreateBucket">
+  <component name="RunManager" selected="Spring Boot.RabbitApplication">
     <configuration name="CreateBucket" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.example.rabbitmq.S3.CreateBucket" />
       <module name="demo" />
@@ -174,7 +173,7 @@
       <workItem from="1742132636257" duration="54000" />
       <workItem from="1742132719218" duration="2067000" />
       <workItem from="1742134825201" duration="1040000" />
-      <workItem from="1742135897126" duration="1647000" />
+      <workItem from="1742135897126" duration="3026000" />
     </task>
     <task id="LOCAL-00001" summary="Init">
       <option name="closed" value="true" />
@@ -288,7 +287,15 @@
       <option name="project" value="LOCAL" />
       <updated>1742131444328</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="-">
+      <option name="closed" value="true" />
+      <created>1742137802260</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1742137802260</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -306,6 +313,16 @@
           <url>file://$PROJECT_DIR$/src/main/java/com/example/rabbitmq/service/RabbitListenerService.java</url>
           <line>65</line>
           <option name="timeStamp" value="51" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/example/rabbitmq/S3/CreateBucket.java</url>
+          <line>73</line>
+          <option name="timeStamp" value="56" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/example/rabbitmq/S3/CreateBucket.java</url>
+          <line>38</line>
+          <option name="timeStamp" value="57" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
