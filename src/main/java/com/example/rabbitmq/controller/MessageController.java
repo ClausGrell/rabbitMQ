@@ -84,7 +84,7 @@ public class MessageController {
     @GetMapping("/tagadd")
     public String addTag(@RequestParam String bucket, @RequestParam String object, @RequestParam String tag, @RequestParam String value ) {
         S3Tagging s3Tagging = new S3Tagging(s3Config.getS3url(), s3Config.getRegion(), s3Config.getAccesskeyid(), s3Config.getSecretaccesskey());
-        s3Tagging.doSomeTagging(bucket, object, tag, value);
+        s3Tagging.addTag(bucket, object, tag, value);
         return "OK";
     }
 

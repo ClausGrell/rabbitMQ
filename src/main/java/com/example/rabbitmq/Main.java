@@ -49,30 +49,10 @@ public class Main {
      * Java keystore type.
      */
     private static final String SERVER_CERTIFICATE_TYPE = "JKS";
-
-    /**
-     * TLS version which should be used.
-     */
     private static final String TLS_TYPE = "TLSv1.2";
-
-    /**
-     * Rabbitmq server ip.
-     */
-    private static final String RABBIT_MQ_HOST = "192.168.0.147";
-
-    /**
-     * Rabbitmq port to listen.
-     */
-    private static final int RABBIT_MQ_PORT = 5671;
-
-    /**
-     * Rabbitmq user to login.
-     */
+    private static final String RABBIT_MQ_HOST = "192.168.0.184";
+    private static final int RABBIT_MQ_PORT = 5672;
     private static final String RABBIT_MQ_USER = "guest";
-
-    /**
-     * Password from rabbitmq user. This INFORMATION should be stored safely!!!!
-     */
     private static final String RABBIT_MQ_PASSWORD = "guest";
 
     /**
@@ -84,34 +64,11 @@ public class Main {
     {
         try
         {
-            URL serverCertificate = ClassLoader.getSystemClassLoader().getResource(SERVER_CERTIFICATE);
-            URL clientCertificate = ClassLoader.getSystemClassLoader().getResource(CLIENT_CERTIFICATE);
-
-            char[] keyPassphrase = CLIENT_PASSWORD_CERTIFICATE.toCharArray();
-            KeyStore ks = KeyStore.getInstance(KEYSTORE_CLIENT);
-            assert clientCertificate != null;
-            ks.load(new FileInputStream(clientCertificate.getFile()), keyPassphrase);
-
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            kmf.init(ks, keyPassphrase);
-
-            char[] trustPassphrase = SERVER_CERTIFICATE_PASSWORD.toCharArray();
-            KeyStore tks = KeyStore.getInstance(SERVER_CERTIFICATE_TYPE);
-            assert serverCertificate != null;
-            tks.load(new FileInputStream(serverCertificate.getFile()), trustPassphrase);
-
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(tks);
-
-            SSLContext c = SSLContext.getInstance(TLS_TYPE);
-            c.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(RABBIT_MQ_HOST);
             factory.setPort(RABBIT_MQ_PORT);
             factory.setUsername(RABBIT_MQ_USER);
             factory.setPassword(RABBIT_MQ_PASSWORD);
-            factory.useSslProtocol(c);
 
             Connection conn = factory.newConnection();
             Channel channel = conn.createChannel();

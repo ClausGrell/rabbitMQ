@@ -31,14 +31,13 @@ public class S3Tagging {
         this.secretaccesskey = secretaccesskey;
     }
 
-    public void doSomeTagging(String bucketName, String objectKey, String tag, String value) {
+    public void addTag(String bucketName, String objectKey, String tag, String value) {
         S3Client s3Client = getS3Client();
         var tags = getObjectTags(bucketName, objectKey );
         ArrayList<Tag> tagList = new ArrayList<Tag>();
         if (tags!=null) {
             tagList = new ArrayList(tags);
         }
-
         boolean tagReplaced = false;
         if (tagList!=null) {
             for (int i = 0; i < tagList.size(); i++) {
@@ -113,12 +112,6 @@ public class S3Tagging {
 
 
     }
-
-
-
-
-
-
 
     public void removeTag(String bucketName, String objectKey, String tag) {
         S3Client s3Client = getS3Client();

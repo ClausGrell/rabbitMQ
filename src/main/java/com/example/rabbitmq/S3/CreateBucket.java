@@ -34,9 +34,9 @@ public class  CreateBucket {
 
     public static void main( String args[]) {
         CreateBucket createBucket = new CreateBucket();
-//        createBucket.createBucket();
+        createBucket.createBucket();
 //        createBucket.addMetaData();
-        createBucket.getMetaData();
+//        createBucket.getMetaData();
 //        createBucket.listBuckets();
 //        createBucket.listBucketObjects("mbs");
     }
@@ -62,17 +62,6 @@ public class  CreateBucket {
             for (Bucket bucket : listBucketsResponse.buckets()) {
                 System.out.println(bucket.name());
             }
-
-            String json = "{\"EventName\":\"s3:ObjectCreated:PutTagging\",\"Key\":\"test/58260c0e-c4b4-4686-9cfc-3f732ff7f6e1\",\"Records\":[{\"eventVersion\":\"2.0\",\"eventSource\":\"minio:s3\",\"awsRegion\":\"\",\"eventTime\":\"2025-03-16T16:02:04.633Z\",\"eventName\":\"s3:ObjectCreated:PutTagging\",\"userIdentity\":{\"principalId\":\"minioadmin\"},\"requestParameters\":{\"principalId\":\"minioadmin\",\"region\":\"\",\"sourceIPAddress\":\"10.0.2.100\"},\"responseElements\":{\"content-length\":\"0\",\"x-amz-id-2\":\"dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8\",\"x-amz-request-id\":\"182D53F0D14C3556\",\"x-minio-deployment-id\":\"76fc4486-4468-4863-a1e9-913f479c09d7\",\"x-minio-origin-endpoint\":\"http://10.0.2.100:9000\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"Config\",\"bucket\":{\"name\":\"test\",\"ownerIdentity\":{\"principalId\":\"minioadmin\"},\"arn\":\"arn:aws:s3:::test\"},\"object\":{\"key\":\"58260c0e-c4b4-4686-9cfc-3f732ff7f6e1\",\"size\":10,\"eTag\":\"94b54a8627da3ce4b54dd168bf40d229\",\"contentType\":\"application/octet-stream\",\"userMetadata\":{\"content-disposition\":\"58260c0e-c4b4-4686-9cfc-3f732ff7f6e1\",\"content-type\":\"application/octet-stream\"},\"sequencer\":\"182D53F0D09E8471\"}},\"source\":{\"host\":\"10.0.2.100\",\"port\":\"\",\"userAgent\":\"NiFi, aws-sdk-java/1.12.710 Linux/6.5.0-44-generic OpenJDK_64-Bit_Server_VM/21.0.3+9-Ubuntu-1ubuntu123.10.1 java/21.0.3 kotlin/1.9.23 vendor/Ubuntu cfg/retry-mode/legacy cfg/auth-source#unknown\"}}]}";
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(json);
-
-            // Convert the JSON to an HTML table
-            String html = generateHtml(jsonNode);
-            System.out.println("****************************************'");
-            System.out.println(html);
-            System.out.println("****************************************'");
-
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -85,20 +74,13 @@ public class  CreateBucket {
     public void listBucketObjects(String bucketName) {
         S3Client s3Client = getS3Client();
         try  {
-
-            // List objects in the bucket
             ListObjectsV2Request listObjects = ListObjectsV2Request.builder()
                     .bucket(bucketName)
                     .build();
-
-            // Get the objects
             ListObjectsV2Response response = s3Client.listObjectsV2(listObjects);
-
-            // Print the object keys
             for (S3Object s3Object : response.contents()) {
                 System.out.println("Object Key: " + s3Object.key());
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }    }
@@ -107,8 +89,31 @@ public class  CreateBucket {
 
     private void createBucket() {
         S3Client s3Client = getS3Client();
-        Connection rabbitConnection = getRabbitConnection();
+        deleteBucket(s3Client, "test1");
 
+        CreateBucketRequest createBucketRequest = CreateBucketRequest.builder().bucket("test1").build();
+        var b = s3Client.createBucket(createBucketRequest);
+        System.out.println("Bucket created");
+
+        createAndBindExchange("AutoExchange", "AutoKey", "testQ");
+
+
+        SnsClient snsClient = getSnsClient();
+        // Create an SNS topic
+        String topicName = "test1-topic";
+        CreateTopicRequest createTopicRequest = CreateTopicRequest.builder()
+                .name(topicName)
+                .build();
+
+        // Virker ikke i minio
+        CreateTopicResponse createTopicResponse = snsClient.createTopic(createTopicRequest);
+        String snsTopicArn = createTopicResponse.topicArn();
+        System.out.println("SNS Topic ARN: " + snsTopicArn);
+        s3Client.close();
+        System.out.println("Done so far");
+    }
+
+    private void deleteBucket(S3Client s3Client, String bucketName) {
         try {
             DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket("test1").build();
             var a = s3Client.deleteBucket(deleteBucketRequest);
@@ -116,44 +121,34 @@ public class  CreateBucket {
             System.out.println("No bucket to delete");
         }
 
-        CreateBucketRequest createBucketRequest = CreateBucketRequest.builder().bucket("test1").build();
-        var b = s3Client.createBucket(createBucketRequest);
-        System.out.println("Bucket created");
+    }
 
+    private void createAndBindExchange(String exchange, String topic, String queueName) {
+        Connection rabbitConnection = getRabbitConnection();
         Channel channel = null;
         try {
             channel = rabbitConnection.createChannel();
-            channel.exchangeDeclare("AutoExchange", BuiltinExchangeType.TOPIC);
-            channel.queueBind("testQ", "AutoExchange", "AutoKey");
+            channel.exchangeDeclare(exchange, BuiltinExchangeType.TOPIC);
+            channel.queueBind(queueName, exchange, topic);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        AwsBasicCredentials awsCreds = AwsBasicCredentials.create("abgiNCA7PEXrRCgFgbL3", "A4qpwWoGojTG1gR99pdtZTP2tOQaeoHcunzXcaq9");
+        try {
+            rabbitConnection.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private SnsClient getSnsClient() {
+        AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accesskeyid, secretaccesskey);
         SnsClient snsClient = SnsClient.builder()
                 .endpointOverride(URI.create(s3url))
                 .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
-                .region(Region.US_WEST_2) // Replace with your desired region
+                .region(Region.of(region)) // Replace with your desired region
                 .build();
-        // Create an SNS topic
-        String topicName = "test1-topic";
-
-        CreateTopicRequest createTopicRequest = CreateTopicRequest.builder()
-                .name(topicName)
-                .build();
-
-        CreateTopicResponse createTopicResponse = snsClient.createTopic(createTopicRequest);
-        String snsTopicArn = createTopicResponse.topicArn();
-
-        System.out.println("SNS Topic ARN: " + snsTopicArn);
-
-        try {
-            rabbitConnection.close();
-            s3Client.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        System.out.println("Done so far");
+        return snsClient;
     }
 
     public S3Client getS3Client() {
